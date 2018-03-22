@@ -4,29 +4,55 @@
 
 ### 定義
 
-その組織なりのサービス分割の仕方を理解している。
+- マイクロサービスを始めている。3個くらい。
+- その組織なりのサービス分割の仕方を理解している。
 
 ## Lv.2に進むためにやること
 
 ### 概要
 
 - 組織
-  - 技術者にオーナーシップを持たせる
+  - 技術者がオーナーシップを持つ
 - 技術
   - ビジネス単位でのモジュール化
     - 正しい責務の分割
     - 疎結合・高凝集を理解すること
   - 良いAPI設計
+  - APIの利用
 
-### 技術者にオーナーシップを持たせる
+### [組織] 技術者がオーナーシップを持つ
 
 - 最初は1チームで複数のサービスを管理してもよい
-- サービスのオーナーは決めておいたほうがよい
+- 小さくても自律した「サービス」
+- **サービスのオーナー** を決めておいたほうがよい
 
+  - 責任と権限の明確化
+  - 技術者の成長につながるメリット
+
+マイクロサービスではそれぞれ独立したライフサイクルを持つ複数の自律的なコードベースがあります。多くの責任を引き受ける前に **個々のサービスを所有させることで開発者たちを向上させる** ことは、 **各自のキャリア目標を実現させるための優れた方法** であり、同時に責任者の負荷を軽減します。
+
+マイクロサービスアーキテクチャ 2.10 チームの構築
+
+## [技術] ビジネス単位でのモジュール化
+
+### 水平分割と垂直分割
+
+- 水平分割 ... 技術的な境界面
+  - 例: MVC, レイヤードアーキテクチャ
+- 垂直分割 ... ビジネス境界
+  - Domain-Driven Designの境界づけられたコンテキスト
+
+### マイクロサービス=垂直分割
+
+- マイクロサービスは垂直分割にすべき
+  - 目的から考えても自然
+  - ほぼ "定義" に近い
+- 水平分割でサービス化
 
 ### 正しい責務の分割
 
-責務の分割は最も重要。
+- 責務の分割は
+  - TODO
 
 失敗例
 
@@ -36,6 +62,8 @@
 
 ### どこからマイクロサービスに切り出すのか?
 
+一言で表すと、「独立させて育てたいもの」
+
 - 変更の頻度が多い
 - 儲かる
 - 他の機能との結合度が低い
@@ -44,36 +72,126 @@ http://arclamp.hatenablog.com/entry/2017/09/08/152005
 
 ### UIに惑わされない
 
-## API設計
+## [技術] API設計
 
-APIはマイクロサービスの命
+### APIはマイクロサービスの命
 
-### Jeff Bezosの言葉
+- APIを通して連携することにより、サービスの自律性が生まれる
+- [Jeff Bezosの言葉](https://apievangelist.com/2012/01/12/the-secret-to-amazons-success-internal-apis/)
+  - 全てのチームはサービスインターフェイスを通して機能を公開し、連携せよ
+  - それ以外のプロセス間通信の方法(DB直読み, 共有メモリ, etc)は禁止である
+  - これを守らない者は解雇だ
 
-- All teams will henceforth expose their data and functionality through service interfaces.
-- Teams must communicate with each other through these interfaces.
-- There will be no other form of inter-process communication allowed: no direct linking, no direct reads of another team’s data store, no shared-memory model, no back-doors whatsoever. The only communication allowed is via service interface calls over the network.
-- Anyone who doesn’t do this will be fired.
+### Rails と API
 
-https://apievangelist.com/2012/01/12/the-secret-to-amazons-success-internal-apis/
+- Rails, RESTfulの指針に乗っていくのが良い
+- このテーマでは一度話しているので、今回は割愛
 
-## 実例
+参考: [ぎんざRuby会議01にて、「マイクロサービス指向 Rails API 開発ガイド」という発表をしました](https://medium.com/finc-engineering/ginzaruby01-rails-api-guide-168fe9cf5b4d)
 
-### 失敗例: "機械学習" マイクロサービス
+## [技術] APIの利用
 
-#### やったこと
+RailsでAPIを利用する側になるときのTips
+
+### APIクライアントの選定
+
+- 生きてればなんでも良い
+- Faraday がおすすめ
+  - 複数のAPIを並列に叩く余地を残す
+    - バックエンドにTyphoeusを利用
+- cookpadの事例はおさえておこう
+  - [RESTful Web API 開発をささえる Garage](http://techlife.cookpad.com/entry/2014/11/06/100000)
+
+### 新しい層を作る: Repository
+
+- おすすめ: app/repositories
+- app/models 以下は避ける
+  - ネットワーク越しのアクセスは、DBアクセスとは全く別物
+  - ActiveRecordと同じ雰囲気で呼び出せないほうがよい
+  - (ActiveResourceは忘れよう)
+
+### Repositoryクラスは目的ごとに分ける
+
+- 呼び出すサービスごとではない
+  - サービス名_repository.rb は避ける
+
+### Hash を返さず、POJO/値を返す
+
+- Hashを返すと、呼び出し側は使いにくい
+- インスタンスにして返すまでがRepositoryの仕事
+- 値 (数値や文字列) しか必要ないなら、それを返してよい
+
+### レスポンスのうち、必要な値だけを利用する
+
+- Tolerant Reader パターン
+- 自サービスに必要な値だけをインスタンスにマップする
+
+### だめな例
+
+```rb
+class User
+  include ActiveModel::Model
+  attr_accessor :id, :name, :age
+end
+
+class UserRepository
+  def self.get(id)
+    response = api_client.get("/v1/users/#{id}")
+    return nil if response.status == 404
+    raise 'Error' unless response.success?
+    # response.body => { 'id' => 1, 'name' => 'qsona', 'age' => 17 }
+    User.new(response.body)
+  end
+end
+```
+
+### だめな理由
+
+- APIへのキー追加は、後方互換性のある変更とみなされるべきだが・・・
+- APIのレスポンスに新しく `gender` キーが追加されると?
+
+```rb
+# response.body => { 'id' => 1, 'name' => 'qsona', 'age' => 17, 'gender' => female }
+User.new(response.body)
+#=> ActiveModel::UnknownAttributeError: unknown attribute 'gender' for User.
+```
+
+### 修正した例
+
+```rb
+    # response.body => { 'id' => 1, 'name' => 'qsona', 'age' => 17 }
+    # User.new(response.body) # => ここを修正
+    body = response.body
+    User.new(id: body['id'], name: body['name'], age: body['age'])
+```
+
+
+### Repositoryのテスト
+
+例: [bblimke/webmock](https://github.com/bblimke/webmock/) を利用する
+
+### Repositoryを利用するコードのテスト
+
+推奨: Repositoryをmock/stubする
+
+## 失敗例: "機械学習" マイクロサービス
+
+### やったこと
 
 - 「機械学習」のマイクロサービスを作った
 - 様々な機械学習ロジックが実装されている
-  - サーベイの質問数を減らす
-  - コンテンツのレコメンド
-- ルールベースのチャットボットもあった
-  - 将来的に機械学習を導入したいから
+  - 例: アンケートの質問数を減らす
+  - 例: ユーザに表示するコンテンツのレコメンド
+- チャットボットの機能もその中に入っている
+  - 将来的に機械学習を導入したい
 - APIを通して、それらの機能を提供している
 
-#### 起こったこと
+### 起こったこと
 
-#### なぜだめだったか
+- ああああTODO
+- メンテ出来る人がいなくなった
+
+### なぜだめだったか
 
 - ビジネスの単位にそぐわないマイクロサービスを作ったこと
   - 「機械学習」そのものはビジネスではない
@@ -83,11 +201,25 @@ https://apievangelist.com/2012/01/12/the-secret-to-amazons-success-internal-apis
   - サービス内に無関係な複数のビジネスが存在=低凝集
   - 他サービスにDBアクセス=密結合
 
-#### 教訓
+### 教訓
 
 - サービスの責務は、ビジネスで捉える
 - 他サービスへのDBに直アクセスするのはいかなる場合でも禁止
 
-## おすすめの文献
+### その後 (現在〜今後の展望)
+
+- 既存の "機械学習サービス" は、徐々に解体
+  - 機械学習のスクリプトは、徐々に移行/削除
+  - チャットボットは、メインのビジネスとして運用中
+- 新しく機械学習をプロダクトに導入するとき
+  - 小さい => Railsのサービスに機械学習のスクリプトを同居させる
+  - 大きい => サービスの子プロダクトとして機械学習の部分を独立させる
+  - サービスのエンジニアと機械学習のエンジニアが密に連携して、プロジェクトを進めている
+
+## Lv.2を目指すためのまとめ
+
+### 一言でいうと
+
+### おすすめの文献
 
 - わかる！ドメイン駆動設計 ～もちこちゃんの大冒険～

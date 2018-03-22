@@ -76,6 +76,7 @@ https://martinfowler.com/bliki/MaturityModel.html
 - マイクロサービスを始める準備ができている。
 
 ### Lv.2 (Started)
+
 - マイクロサービスを始めている。3個くらい。
 - その組織なりのサービス分割の仕方を理解している。
 
