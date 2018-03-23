@@ -3,6 +3,7 @@ masters:
     cover: true
   - name: "Green Heading"
   - name: "Green White Heading"
+    template: 4
   - name: "Green White Heading & Body"
     template: 3
   - name: "Green Heading & Body"
