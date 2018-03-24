@@ -1,3 +1,4 @@
+
 # Lv.0 => Lv.1
 
 ## Lv.1の定義
@@ -71,5 +72,5 @@ https://twitter.com/yosuke_furukawa/status/976705435729248256
 
 ### Lv.1 おすすめの文献
 
-- アジャイルサムライ
+- アジャイルサムライ −達人開発者への道−
 - レールの伸ばし方 by @willnet, Rails Developers Meetup 2017

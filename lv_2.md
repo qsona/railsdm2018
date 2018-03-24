@@ -1,3 +1,4 @@
+
 # Lv.1 => Lv.2
 
 ## Lv.2の定義
@@ -59,21 +60,27 @@
 ### APIはマイクロサービスの命
 
 - APIを通して連携することにより、サービスの自律性が生まれる
-- [Jeff Bezosの言葉](https://apievangelist.com/2012/01/12/the-secret-to-amazons-success-internal-apis/)
+- Jeff Bezosの言葉
   - 全てのチームはサービスインターフェイスを通して機能を公開し、連携せよ
   - それ以外のプロセス間通信の方法(DB直読み, 共有メモリ, etc)は禁止である
   - これを守らない者は解雇だ
+
+出典: The Secret to Amazons Success Internal APIs
+https://apievangelist.com/2012/01/12/the-secret-to-amazons-success-internal-apis/
 
 ### Rails と API
 
 - Rails, RESTfulの指針に乗っていくのが良い
 - このテーマでは一度話しているので、今回は割愛します
 
-参考: [マイクロサービス指向 Rails API 開発ガイド](https://medium.com/finc-engineering/ginzaruby01-rails-api-guide-168fe9cf5b4d)
+参考: マイクロサービス指向 Rails API 開発ガイド (@qsona, ぎんざRuby会議01)
+https://medium.com/finc-engineering/ginzaruby01-rails-api-guide-168fe9cf5b4d
 
 ## [技術] APIの利用
 
 RailsでAPIを利用する側になるときのTips
+
+### しばらくRuby/Railsの話をします
 
 ### APIクライアントの選定
 
@@ -82,7 +89,9 @@ RailsでAPIを利用する側になるときのTips
   - 複数のAPIを並列に叩く余地を残す
     - バックエンドにTyphoeusを利用
 - cookpadの事例はおさえておこう
-  - [RESTful Web API 開発をささえる Garage](http://techlife.cookpad.com/entry/2014/11/06/100000)
+
+RESTful Web API 開発をささえる Garage - クックパッド開発者ブログ
+http://techlife.cookpad.com/entry/2014/11/06/100000
 
 ### 新しい層を作る: Repository
 
@@ -156,12 +165,11 @@ User.new(id: body['id'], name: body['name'], age: body['age'])
 
 ### Repositoryのテスト
 
-- 例: [bblimke/webmock](https://github.com/bblimke/webmock/) を利用する
-- これを書いておくと、繋ぎ込みの確度がぐっと上がる
-
-### Repositoryを利用するコードのテスト
-
-- webmockではなく、Repositoryをmock/stubするのを推奨
+- Repository自体のテスト
+  - 例: [bblimke/webmock](https://github.com/bblimke/webmock/) を利用する
+  - これを書いておくと、繋ぎ込みの確度がぐっと上がる
+- Repositoryを利用するコードのテスト
+  - webmockではなく、Repositoryをmock/stubするのを推奨
 
 ## [組織] 技術者がオーナーシップを持つ
 
@@ -243,6 +251,6 @@ User.new(id: body['id'], name: body['name'], age: body['age'])
 
 ### Lv.2 おすすめの文献
 
-- わかる！ドメイン駆動設計 ～もちこちゃんの大冒険～
+- わかる！ドメイン駆動設計 ～もちこちゃんの大冒険～ / TechBooster
 - マイクロサービスアーキテクチャ
   - 1章, 3章, 4章 4.1〜4.7, 5章
